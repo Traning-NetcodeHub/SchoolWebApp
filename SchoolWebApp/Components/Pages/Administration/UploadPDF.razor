@@ -1,0 +1,135 @@
+﻿@page "/upload-pdf"
+@layout AdminLayout
+@using Microsoft.EntityFrameworkCore
+@using NetcodeHub.Packages.Components.FileUpload
+@using NetcodeHub.Packages.Components.Toast
+@using SchoolWebApp.Data
+@using Syncfusion.Blazor.SfPdfViewer
+@rendermode InteractiveServer
+@inject ApplicationDbContext context
+<PageTitle>Upload PDF</PageTitle>
+<div class="container-fluid">
+    <div class="row mt-3">
+        <div class="col-lg-12 col-md-12 col-sm-12 ">
+            <div class="card">
+
+                <div class="card-header d-flex justify-content-evenly">
+                    <NetcodeHubFileUpload Multiple="true" RequiredExtensions="Extension" ShowDisplay="true" CssClass="form-control form-select d-flex" Notify="RetrievePDFFile" />
+                    @if (SelectedPDFFiles.Count != 0)
+                    {
+                        <button class="btn btn-primary btn-lg btn-block d-flex" @onclick="UploadPDFFile">Upload PDF</button>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 col-md-12 mt-3">
+            <div class="card">
+                <div class="card-header">
+                    Available Files
+                </div>
+                <div class="container-fluid">
+                    <div class="row">
+                        @if (GetPDFFileData != null || GetPDFFileData!.Count != 0)
+                        {
+                            @foreach (var file in GetPDFFileData)
+                            {
+                                <div class="card col-lg-3 col-md-4 col-sm-12">
+                                    <div class="card-header">
+                                        @file.OriginalName
+                                        <a class="btn btn-link text-danger float-end" @onclick="(async ()=>await Delete(file))">Delete</a>
+                                    </div>
+                                    <SfPdfViewer2 DocumentPath="@($"wwwroot/{file.FileLink}")" Height="640px" Width="100%"></SfPdfViewer2>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<NetcodeHubToast @ref="Toast"
+                 Position="@ToastPosition.Bottom()"
+                 IconClass="bi bi-check"
+                 Persist="true"
+                 Duration=4000 />
+
+@code {
+    NetcodeHubToast? Toast;
+    List<string> Extension = [".pdf"];
+    HashSet<IBrowserFile> SelectedPDFFiles = [];
+    List<UploadFileName> GetPDFFileData = [];
+    protected override async Task OnInitializedAsync()
+    {
+        await GetPDFFiles();
+    }
+
+    private async Task RetrievePDFFile(NetcodeHubUploadModel model)
+    {
+        if (!string.IsNullOrEmpty(model.Message))
+        {
+            await Toast!.ShowErrorToast("Alert", model.Message);
+            return;
+        }
+        SelectedPDFFiles = model.FileModel!.IBrowserFiles!.ToHashSet();
+    }
+
+    async Task UploadPDFFile()
+    {
+        if (!SelectedPDFFiles.Any()) return;
+
+        List<UploadFileName> pdfFileNames = [];
+        foreach (var file in SelectedPDFFiles)
+        {
+            // Set up a unique file name and path
+            var originalFileName = Path.GetFileNameWithoutExtension(file.Name).Replace(" ", "_").TrimEnd();
+            var GeneratedFileName = originalFileName + "_" + Guid.NewGuid().ToString() + Path.GetExtension(file.Name);
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "PDFs", GeneratedFileName);
+
+
+            var maxFileSize = 104857600;
+
+            // Save the file to the server (wwwroot/PDFs folder)
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.OpenReadStream(maxFileSize).CopyToAsync(stream);
+                // Generate the relative path to the video
+                pdfFileNames!.Add(new UploadFileName()
+                    {
+                        OriginalName = originalFileName,
+                        GeneratedName = GeneratedFileName,
+                        FileLink = $"/PDFs/{GeneratedFileName}",
+                        IsPdf = true
+                    });
+            }
+        }
+        await CommitToDatabase(pdfFileNames);
+
+    }
+
+    async Task CommitToDatabase(List<UploadFileName> pdfFiles)
+    {
+        context.UploadedFileNames.AddRange(pdfFiles!);
+        await context.SaveChangesAsync();
+        await GetPDFFiles();
+        SelectedPDFFiles?.Clear();
+        await Toast!.ShowSuccessToast("Information", "PDF file saved successfully");
+    }
+
+    private async Task GetPDFFiles() => GetPDFFileData = await context.UploadedFileNames.AsNoTracking().Where(x => x.IsPdf).ToListAsync();
+
+    async Task Delete(UploadFileName file)
+    {
+        var _file = await context.UploadedFileNames.FirstOrDefaultAsync(_ => _.Id == file.Id);
+        context.UploadedFileNames.Remove(_file!);
+        await context.SaveChangesAsync();
+        await GetPDFFiles();
+
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "PDFs", file.GeneratedName!);
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+    }
+}

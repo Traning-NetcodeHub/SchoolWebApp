@@ -1,0 +1,220 @@
+﻿.header {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .header .logo {
+        font-size: 24px;
+        font-weight: bold;
+    }
+
+    .header .nav {
+        list-style: none;
+        display: flex;
+        gap: 20px;
+    }
+
+        .header .nav li {
+            display: inline;
+        }
+
+            .header .nav li a {
+                color: white;
+                text-decoration: none;
+            }
+
+/* Hero Section */
+.hero {
+    background-image: url('https://www.shutterstock.com/image-vector/color-sport-background-football-basketball-260nw-1315841180.jpg');
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 100px 20px;
+    text-align: center;
+    opacity:0.7;
+    color:black
+    
+}
+
+    .hero h1 {
+        font-size: 48px;
+        margin-bottom: 20px;
+    }
+
+    .hero p {
+        font-size: 24px;
+        margin-bottom: 40px;
+    }
+
+    .hero .cta {
+        margin-top: 20px;
+    }
+
+        .hero .cta a {
+            background-color: #ff6600;
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 0 10px;
+            font-size: 18px;
+        }
+
+            .hero .cta a.secondary {
+                background-color: #007bff;
+            }
+
+/* Featured Courses */
+.courses {
+    padding: 50px 20px;
+    background-color: #f4f4f4;
+    text-align: center;
+}
+
+    .courses h2 {
+        font-size: 36px;
+        margin-bottom: 40px;
+    }
+
+.course-cards {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.course-card {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    margin: 20px;
+    padding: 20px;
+    text-align: left;
+}
+
+    .course-card img {
+        max-width: 100%;
+        border-radius: 10px;
+    }
+
+    .course-card h3 {
+        font-size: 24px;
+        margin: 15px 0;
+    }
+
+    .course-card p {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .course-card a {
+        text-decoration: none;
+        color: #007bff;
+        font-weight: bold;
+    }
+
+/* Introduction Section */
+.introduction {
+    padding: 50px 20px;
+    background-color: white;
+    text-align: center;
+}
+
+    .introduction h2 {
+        font-size: 36px;
+        margin-bottom: 20px;
+    }
+
+    .introduction p {
+        font-size: 18px;
+        color: #666;
+        max-width: 800px;
+        margin: 0 auto 40px;
+    }
+
+   /* .introduction video {
+        max-width: 100%;
+        border-radius: 10px;
+    }*/
+    .introduction video {
+        width: 80%; /* Adjust the width as needed (e.g., 80% of the container's width) */
+        max-width: 600px; /* Ensures the video doesn't get too large on larger screens */
+        height: auto; /* Keeps the aspect ratio intact */
+        border-radius: 10px;
+        margin: 20px auto; /* Centers the video within the container */
+        display: block; /* Ensures the video is centered */
+    }
+
+/* Latest News */
+.news {
+    padding: 50px 20px;
+    background-color: #f4f4f4;
+}
+
+    .news h2 {
+        font-size: 36px;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+.news-articles {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+.news-article {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    margin: 20px;
+    padding: 20px;
+    text-align: left;
+}
+
+    .news-article img {
+        max-width: 100%;
+        border-radius: 10px;
+    }
+
+    .news-article h3 {
+        font-size: 24px;
+        margin: 15px 0;
+    }
+
+    .news-article p {
+        font-size: 16px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    .news-article a {
+        text-decoration: none;
+        color: #007bff;
+        font-weight: bold;
+    }
+
+/* Success Stories */
+.success-stories {
+    padding: 50px 20px;
+    background-color: white;
+    text-align: center;
+}
+
+    .success-stories h2 {
+        font-size: 36px;
+        margin-bottom: 40px;
+    }
+
+    .success-stories p {
+        font-size: 18px;
+        color: #666;
+        max-width: 800px;
+        margin: 0 auto 40px;
+    }

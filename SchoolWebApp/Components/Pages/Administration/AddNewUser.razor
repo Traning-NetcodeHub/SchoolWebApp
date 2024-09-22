@@ -1,0 +1,158 @@
+﻿@page "/Account/Register"
+@layout AdminLayout
+@using System.ComponentModel.DataAnnotations
+@using System.Text
+@using System.Text.Encodings.Web
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.WebUtilities
+@using NetcodeHub.Packages.Components.Modal
+@using NetcodeHub.Packages.Components.Toast
+@using NetcodeHub.Packages.Extensions.PasswordGenerator
+@using SchoolWebApp.Data
+@rendermode InteractiveServer
+@inject UserManager<ApplicationUser> userManager
+@inject RoleManager<IdentityRole> roleManager
+@inject ApplicationDbContext dbContext
+
+<PageTitle>Register</PageTitle>
+<div class="row mt-5">
+    <div class="col-md-4">
+        <div class="card bg-primary">
+        <div class="card p-4 m-2 mt-5 border-primary">
+            <EditForm Model="Input" OnValidSubmit="RegisterUser" FormName="register">
+                <DataAnnotationsValidator />
+                <div class="card-header"><h2>Add New User</h2></div>
+
+                <hr />
+                <ValidationSummary class="text-danger" role="alert" />
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Name" class="form-control" autocomplete="fullname" aria-required="true" placeholder="John Doe" />
+                    <label for="fullname">Full Name</label>
+                    <ValidationMessage For="() => Input.Name" class="text-danger" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                    <label for="email">Email</label>
+                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                </div>
+                <div class="form-floating mb-3">
+                    <select @bind="Input.Role" class="form-select">
+                        @foreach (var role in Roles)
+                        {
+                            <option value="@role">@role</option>
+                        }
+                    </select>
+                    <label for="role">Role</label>
+                    <ValidationMessage For="() => Input.Role" class="text-danger" />
+                </div>
+                <button type="submit" class="w-100 btn btn-lg btn-primary">Add User</button>
+            </EditForm>
+        </div>
+        </div>
+    </div>
+</div>
+<NetcodeHubToast @ref="ToastComponent"
+                 Position="@ToastPosition.Bottom()"
+                 IconClass="bi bi-check"
+                 Persist="false"
+                 Duration=4000 />
+<NetcodeHubModal @bind-Open="IsOpen"
+                 Actions="ButtonActions"
+                 BootstrapClass="border-info rounded p-2 ml-2 mr-2"
+                 CustomStyle="min-width:300px; max-width:500px;">
+    <ContentTemplate>
+        <div class="card">
+            <div class="card-header">Notification</div>
+            <div class="card-body">
+                <p class="text-muted">
+                    @ModalMessage
+                </p>
+            </div>
+        </div>
+    </ContentTemplate>
+    <ButtonTemplate>
+        <div class="card border-0">
+            <div class="card-body">
+                <button class="btn btn-info float-end" value="ok">Ok</button>
+            </div>
+        </div>
+    </ButtonTemplate>
+</NetcodeHubModal>
+@code {
+    NetcodeHubToast? ToastComponent;
+    public string? ModalMessage { get; set; } = string.Empty;
+    public bool IsOpen { get; set; }
+    void OpenModal() => IsOpen = true;
+    private InputModel Input { get; set; } = new();
+
+    protected override void OnInitialized() => Input.Role = Roles.FirstOrDefault();
+
+    public async Task RegisterUser()
+    {
+        string password = NetcodeHubPasswordGenerator.GeneratePassword(8);
+        var user = new ApplicationUser()
+            {
+                UserName = Input.Email,
+                PasswordHash = password,
+                Fullname = Input.Name,
+                Email = Input.Email
+            };
+
+        var result = await userManager.CreateAsync(user, password);
+
+        if (result.Succeeded)
+        {
+            var findRole = await roleManager.FindByNameAsync(Input.Role!.Trim()!);
+            if (findRole == null)
+                await roleManager.CreateAsync(new IdentityRole(Input.Role!));
+
+            var response = await userManager.AddToRoleAsync(user, Input.Role);
+            if (!response.Succeeded)
+            {
+                var _user = dbContext.Users.FirstOrDefault(_ => _.Email == Input.Email);
+                dbContext.Users.Remove(_user!);
+                await dbContext.SaveChangesAsync();
+                await DisplayMessage("Alert", "Error occurred whiles adding user");
+                return;
+            }
+            await DisplayMessage
+            ("Success", $"Information: User created successful{Environment.NewLine}Email:{Input.Email}{Environment.NewLine}Password:{password}");
+        }
+    }
+
+
+    private async Task DisplayMessage(string title, string message)
+    {
+        ModalMessage = message;
+        OpenModal();
+        if (title == "Alert")
+            await ToastComponent!.ShowErrorToast(title, message);
+        else
+            await ToastComponent!.ShowSuccessToast(title, message);
+    }
+
+    private List<string> Roles = new List<string>
+    {
+        "Admin",
+        "User"
+    };
+
+    void ButtonActions(string action)
+    {
+        if (action == "ok")
+            IsOpen = false;
+    }
+
+
+    private sealed class InputModel
+    {
+        [Required]
+        public string? Name { get; set; }
+
+        [Required]
+        [EmailAddress]
+        public string? Email { get; set; }
+
+        public string? Role { get; set; }
+    }
+}

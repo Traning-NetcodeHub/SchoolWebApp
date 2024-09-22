@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-SchoolWebApp-2decbedf-089b-4565-9fca-8e43e705bb70</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\games.mp4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8" />
+    <PackageReference Include="NetcodeHub.Packages.Components.FileUpload" Version="1.0.7" />
+    <PackageReference Include="NetcodeHub.Packages.Components.Modal" Version="1.0.1" />
+    <PackageReference Include="NetcodeHub.Packages.Components.Toast" Version="1.0.5" />
+    <PackageReference Include="NetcodeHub.Packages.Extensions.PasswordGenerator" Version="1.0.0" />
+    <PackageReference Include="Syncfusion.Blazor.SfPdfViewer" Version="27.1.48" />
+    <PackageReference Include="Syncfusion.Blazor.Themes" Version="25.1.35" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\PDFs\" />
+    <Folder Include="wwwroot\Videos\" />
+  </ItemGroup>
+
+</Project>

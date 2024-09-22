@@ -1,0 +1,140 @@
+﻿@page "/upload-video"
+@layout AdminLayout
+@using Microsoft.EntityFrameworkCore
+@using NetcodeHub.Packages.Components.FileUpload
+@using NetcodeHub.Packages.Components.Toast
+@using SchoolWebApp.Data
+@rendermode InteractiveServer
+@inject ApplicationDbContext context
+<PageTitle>Upload Video</PageTitle>
+<div class="container-fluid">
+    <div class="row mt-3">
+        <div class="col-lg-12 col-md-12 col-sm-12 ">
+            <div class="card">
+                <div class="card-header d-flex justify-content-evenly">
+                    <NetcodeHubFileUpload Multiple="true" RequiredExtensions="Extension" ShowDisplay="true" CssClass="form-control form-select d-flex" Notify="RetrieveVideoFile" />
+                    @if (SelectedVideoFile.Count != 0)
+                    {
+                        <button class="btn btn-primary btn-lg btn-block d-flex" @onclick="UploadVideoFile">Upload Video</button>
+                    }
+                </div>
+            </div>
+
+
+        </div>
+        <div class="col-lg-12 col-md-12 mt-3">
+            <div class="card">
+                <div class="card-header">
+                    Available Files
+                </div>
+                <div class="container-fluid">
+                    <div class="row">
+                        @if (GetVideoFileData != null || GetVideoFileData!.Count != 0)
+                        {
+                            @foreach (var file in GetVideoFileData)
+                            {
+                                <div class="card col-lg-4 col-md-4 col-sm-12">
+                                    <div class="card-header"> @file.OriginalName
+                                        <a class="btn btn-link text-danger float-end" @onclick="(async ()=>await Delete(file))">X</a>
+                                    </div>
+                                    <video width="400" controls>
+                                        <source src="@file.FileLink" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<NetcodeHubToast @ref="Toast"
+                 Position="@ToastPosition.Bottom()"
+                 IconClass="bi bi-check"
+                 Persist="true"
+                 Duration=4000 />
+
+@code {
+    NetcodeHubToast? Toast;
+    List<string> Extension = [".mp4"];
+    HashSet<IBrowserFile> SelectedVideoFile = [];
+    List<UploadFileName> GetVideoFileData = [];
+    protected override async Task OnInitializedAsync()
+    {
+        await GetVideoFiles();
+    }
+
+    private async Task RetrieveVideoFile(NetcodeHubUploadModel model)
+    {
+        if (!string.IsNullOrEmpty(model.Message))
+        {
+            await Toast!.ShowErrorToast("Alert", model.Message);
+            return;
+        }
+        SelectedVideoFile = model.FileModel!.IBrowserFiles!.ToHashSet();
+    }
+
+    async Task UploadVideoFile()
+    {
+        if (!SelectedVideoFile.Any()) return;
+
+        List<UploadFileName> VideoFileNames = [];
+        foreach (var file in SelectedVideoFile)
+        {
+            // Set up a unique file name and path
+            var originalFileName = Path.GetFileNameWithoutExtension(file.Name).Replace(" ", "_").TrimEnd();
+            var GeneratedFileName = originalFileName + "_" + Guid.NewGuid().ToString() + Path.GetExtension(file.Name);
+            var videoPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "videos", GeneratedFileName);
+
+            // Set the maximum allowed size for the file (e.g., 100MB)
+            var maxFileSize = 104857600; // 100MB in bytes
+
+            // Save the file to the server (wwwroot/videos folder)
+            using (var stream = new FileStream(videoPath, FileMode.Create))
+            {
+                await file.OpenReadStream(maxFileSize).CopyToAsync(stream);
+                // Generate the relative path to the video
+                VideoFileNames!.Add(new UploadFileName()
+                    {
+                        OriginalName = originalFileName,
+                        GeneratedName = GeneratedFileName,
+                        FileLink = $"/Videos/{GeneratedFileName}"
+                    });
+            }
+        }
+        await CommitToDatabase(VideoFileNames);
+
+    }
+
+    async Task CommitToDatabase(List<UploadFileName> videoFiles)
+    {
+        context.UploadedFileNames.AddRange(videoFiles!);
+        await context.SaveChangesAsync();
+        await GetVideoFiles();
+        SelectedVideoFile?.Clear();
+        await Toast!.ShowSuccessToast("Information", "Video file saved successfully");
+    }
+
+    private async Task GetVideoFiles() => GetVideoFileData = await context.UploadedFileNames.AsNoTracking().Where(_=>_.IsPdf == false).ToListAsync();
+
+    async Task Delete(UploadFileName file)
+    {
+        var _file = await context.UploadedFileNames.FirstOrDefaultAsync(_ => _.Id == file.Id);
+        context.UploadedFileNames.Remove(_file!);
+        await context.SaveChangesAsync();
+        await GetVideoFiles();
+
+        var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "Videos", file.GeneratedName!);
+        if (File.Exists(filePath))
+        {
+            File.Delete(filePath);
+        }
+    }
+}

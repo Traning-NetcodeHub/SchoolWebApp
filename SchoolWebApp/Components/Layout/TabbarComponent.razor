@@ -1,0 +1,50 @@
+﻿<nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-primary p-2" style="font-family:Cambria"
+    <a class="navbar-brand" href="#">EduSport</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNavDropdown">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link text-light fw-bold" href="#">Home <span class="sr-only"></span></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light fw-bold" href="#">Tennis</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light fw-bold" href="#">Tennis Table</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light fw-bold" href="#">Volleyball</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link text-light fw-bold" href="#">Basketball</a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle fw-bold text-light" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                   Football
+                </a>
+                <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                    <li><a class="dropdown-item" href="#">About</a></li>
+                    <li><a class="dropdown-item" href="#">Education</a></li>
+                    <li><a class="dropdown-item" href="#">Training</a></li>
+                    <li><a class="dropdown-item" href="#">Shots</a></li>
+                    <li><hr class="dropdown-divider" /></li>
+                    <li><a class="dropdown-item" href="#">More</a></li>
+                </ul>
+            </li>
+            <li>
+
+            </li>
+        </ul>
+        <AuthorizeView>
+             <NotAuthorized>
+                <span class="navbar-text float-end">
+                    <a style="font-size:12px;" href="Account/Login" class="btn btn-link">Sign In</a>
+                </span>
+        </NotAuthorized>
+        </AuthorizeView>
+    </div>
+
+</nav>
+

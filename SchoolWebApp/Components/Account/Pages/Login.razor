@@ -1,0 +1,106 @@
+﻿@page "/Account/Login"
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+@using NetcodeHub.Packages.Components.Modal
+@using NetcodeHub.Packages.Components.Toast
+@using SchoolWebApp.Components.Layout
+@using SchoolWebApp.Data
+@using System.Security.Claims
+@inject SignInManager<ApplicationUser> SignInManager
+@inject NavigationManager NavigationManager
+@inject UserManager<ApplicationUser> userManager
+<PageTitle>Log in</PageTitle>
+
+
+<div class="row mt-5">
+    <div class="col-md-4"></div>
+    <div class="col-md-4">
+        <div class="card bg-primary">
+        <div class="card p-4 m-2 mt-5">
+            <EditForm Model="Input" OnValidSubmit="LoginUser" method="post" FormName="login">
+                <DataAnnotationsValidator />
+                <div class="card-header"><h2>Kindly Login.</h2></div>
+                
+                <hr />
+                <ValidationSummary class="text-danger" role="alert" />
+                @if (!string.IsNullOrEmpty(Message))
+                {
+                    <div class="alert alert-danger">@Message</div>
+                }
+                <div class="form-floating mb-3">
+                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                    <label for="email" class="form-label">Email</label>
+                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                </div>
+                <div class="form-floating mb-3">
+                    <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" placeholder="password" />
+                    <label for="password" class="form-label">Password</label>
+                    <ValidationMessage For="() => Input.Password" class="text-danger" />
+                </div>
+                <div class="checkbox mb-3">
+                    <label class="form-label">
+                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
+                        Remember me
+                    </label>
+                </div>
+                <div>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                </div>
+            </EditForm>
+        </div>
+        </div>
+    </div>
+    <div class="col-md-4"></div>
+    
+    
+</div>
+
+@code {
+    string Message = string.Empty;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    public async Task LoginUser()
+    {
+        Message = string.Empty;
+        var getUser = await userManager.FindByEmailAsync(Input.Email);
+        if (getUser == null)
+        {
+            Message= "Invalid credentials";
+            return;
+        }
+
+
+        var verifyPassword = await userManager.CheckPasswordAsync(getUser!, Input.Password);
+        if (!verifyPassword)
+        {
+            Message = "Invalid username/password";
+            return;
+        }
+
+        Claim[] claims = 
+        [
+            new Claim(ClaimTypes.Email, getUser.Email!),
+            new Claim("Fullname", getUser.Fullname!),
+            new Claim(ClaimTypes.Role, (await userManager.GetRolesAsync(getUser)).FirstOrDefault()!),
+       ];
+        await SignInManager.SignInWithClaimsAsync(getUser, Input.RememberMe, claims);
+        NavigationManager.NavigateTo("/admin");
+    }
+
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+
+        [Display(Name = "Remember me?")]
+        public bool RememberMe { get; set; }
+    }
+}

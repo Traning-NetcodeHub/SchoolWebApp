@@ -1,0 +1,119 @@
+﻿@page "/"
+@using Microsoft.EntityFrameworkCore
+@using SchoolWebApp.Data
+@inject IJSRuntime JSRuntime
+@inject ApplicationDbContext context
+@rendermode InteractiveServer
+
+
+
+<!-- Hero Section -->
+<section class="hero">
+    <h1>Empowering the Future of Sports Education</h1>
+    <p>Learn, Train, and Excel in Sports with Our Comprehensive Resources</p>
+    <div class="cta">
+        <a href="#">Explore Courses</a>
+        <a href="#" class="secondary">Join Our Community</a>
+    </div>
+</section>
+
+<!-- Featured Courses Section -->
+<section class="courses">
+    <h2>Explore Our Popular Courses</h2>
+    <div class="course-cards">
+        <div class="course-card">
+            <div class="hstack gap-1">
+                <img src="https://th.bing.com/th/id/OIP.tNuryEb5-Lz9WGCiMMu0sQAAAA?rs=1&pid=ImgDetMain" width="50" height="50" alt="Course 1">
+                <h3>Sports Science 101</h3>
+            </div>
+            <p>Learn the fundamentals of sports science and how it applies to athletic performance.</p>
+            <a href="#">Learn More</a>
+        </div>
+        <div class="course-card">
+            <div class="hstack gap-1">
+                <img src="https://i0.wp.com/elitetrack.com/wp-content/uploads/2014/02/coaching.jpg?fit=1200%2C1200&ssl=1" height="50" width="50" alt="Course 2">
+                <h3>Coaching Certification</h3>
+            </div>
+            <p>Get certified as a coach and lead your team to victory with expert knowledge.</p>
+            <a href="#">Learn More</a>
+        </div>
+        <div class="course-card">
+            <div class="hstack gap-1">
+                <img src="https://th.bing.com/th/id/R.752244f1273d82502d138bcc625b0ad6?rik=AiY5Js0Zk8DtNQ&pid=ImgRaw&r=0" width="50" height="50" alt="Course 3">
+                <h3>Nutrition for Athletes</h3>
+            </div>
+            <p>Understand the importance of nutrition in sports and how to optimize performance.</p>
+            <a href="#">Learn More</a>
+        </div>
+    </div>
+</section>
+
+<!-- Introduction Section -->
+<section class="introduction">
+    <h2>Why Choose Us?</h2>
+    <p>We offer a wide range of sports education resources, from basic training to advanced coaching techniques, all designed to help you succeed in the world of sports.</p>
+
+    <div class="container-fluid">
+        @if (VideoFiles != null || VideoFiles!.Count != 0)
+        {
+            <div class="row">
+                @foreach (var file in VideoFiles)
+                {
+                    <div class="card col-lg-4">
+                        <div class="card-header"> @file.OriginalName</div>
+                        <video width="400" controls>
+                            <source src="@file.FileLink" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</section>
+
+<!-- Latest News Section -->
+<section class="news">
+    <h2>Stay Informed with the Latest in Sports Education</h2>
+    <div class="news-articles">
+        <div class="news-article">
+            <div class="hstack gap-1">
+                <img src="https://th.bing.com/th/id/R.a54b575fd9106d482f655458ec87cc92?rik=ZHCC81bvGuJJuw&pid=ImgRaw&r=0" width="50" height="50" alt="News 1">
+                <h3>New Coaching Techniques</h3>
+            </div>
+            <p>Discover the latest techniques in sports coaching to enhance your team's performance.</p>
+            <a href="#">Read More</a>
+        </div>
+        <div class="news-article">
+            <div class="hstack gap-1">
+                <img src="https://th.bing.com/th/id/R.a54b575fd9106d482f655458ec87cc92?rik=ZHCC81bvGuJJuw&pid=ImgRaw&r=0" width="50" height="50" alt="News 2">
+                <h3>Upcoming Sports Conference</h3>
+            </div>
+            <p>Join us at the next sports conference where experts will share their insights.</p>
+            <a href="#">Read More</a>
+        </div>
+        <div class="news-article">
+            <div class="hstack gap-1">
+                <img src="https://th.bing.com/th/id/R.a54b575fd9106d482f655458ec87cc92?rik=ZHCC81bvGuJJuw&pid=ImgRaw&r=0" width="50" height="50" alt="News 3">
+                <h3>Athlete Nutrition Tips</h3>
+            </div>
+            <p>Learn essential nutrition tips that every athlete should know to stay at the top of their game.</p>
+            <a href="#">Read More</a>
+        </div>
+    </div>
+</section>
+
+<!-- Success Stories Section -->
+<section class="success-stories">
+    <h2>Success Stories</h2>
+    <p>Read inspiring stories from students, coaches, and athletes who have excelled in their fields thanks to our resources and courses.</p>
+</section>
+
+@code {
+    private List<UploadFileName> VideoFiles = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        VideoFiles = await context.UploadedFileNames.Where(_=>_.IsPdf==false).ToListAsync();
+    }
+}
