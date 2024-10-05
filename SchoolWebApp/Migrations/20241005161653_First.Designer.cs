@@ -11,8 +11,8 @@ using SchoolWebApp.Data;
 namespace SchoolWebApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240916181540_Third")]
-    partial class Third
+    [Migration("20241005161653_First")]
+    partial class First
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -228,6 +228,12 @@ namespace SchoolWebApp.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsPdf")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsTennis")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsVolley")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("OriginalName")

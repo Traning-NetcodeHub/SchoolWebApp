@@ -1,0 +1,91 @@
+﻿@page "/volley"
+@using SchoolWebApp.Data
+@using Microsoft.EntityFrameworkCore
+@using Syncfusion.Blazor.SfPdfViewer
+@inject ApplicationDbContext context
+@rendermode InteractiveServer
+<PageTitle>Volley</PageTitle>
+<header>
+    <h1>Learn Volleyball - Your Guide to Mastering the Sport</h1>
+</header>
+<!-- Main Content Container -->
+<div class="container">
+
+    <!-- Introduction Section -->
+    <div class="section">
+        <h2>Welcome to Volleyball Education</h2>
+        <p>
+            Volleyball is a dynamic, fast-paced team sport that combines athleticism, strategy, and teamwork.
+            On this educational page, we provide you with everything you need to learn about volleyball—whether
+            you're a beginner or an advanced player. Below, you will find a match video that demonstrates the key
+            skills and strategies used in professional volleyball, as well as a detailed guide to the rules of the game.
+        </p>
+    </div>
+
+    <!-- Video Section -->
+    <div class="section video-container">
+        <h2>Watch: Professional Volleyball Match</h2>
+        <p>
+            This video highlights a high-level volleyball match, showcasing advanced techniques, positioning,
+            and communication between players. Pay attention to the footwork, ball-handling skills, and
+            team dynamics that make volleyball such a thrilling and challenging sport.
+        </p>
+        <div class="container-fluid">
+            @if (VideoFiles != null || VideoFiles!.Count != 0)
+            {
+                <div class="row">
+                    @foreach (var file in VideoFiles)
+                    {
+                        <div class="card col-lg-4">
+                            <div class="card-header"> @file.OriginalName</div>
+                            <video width="400" controls>
+                                <source src="@file.FileLink" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+    <!-- PDF Section -->
+    <div class="section pdf-container">
+        <h2>Volleyball Rules and Guidelines</h2>
+        <p>
+            Understanding the rules is crucial to playing volleyball effectively. Below is a detailed guide to the
+            official volleyball rules, including scoring systems, player positions, and court regulations. Feel free
+            to browse through the PDF to expand your knowledge of the sport.
+        </p>
+
+        <div class="container-fluid">
+            <div class="row">
+                @if (GetPDFFileData != null || GetPDFFileData!.Count != 0)
+                {
+                    @foreach (var file in GetPDFFileData)
+                    {
+                        <div class="card col-lg-3 col-md-4 col-sm-12">
+                            <div class="card-header">@file.OriginalName</div>
+                            <SfPdfViewer2 DocumentPath="@($"wwwroot/{file.FileLink}")" Height="640px" Width="100%"></SfPdfViewer2>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Footer Section -->
+<footer>
+    <p>&copy; 2024 Learn Volleyball. All rights reserved. | Educational Resources for Volleyball Enthusiasts</p>
+</footer>
+
+@code {
+    private List<UploadFileName> VideoFiles = [];
+    List<UploadFileName> GetPDFFileData = [];
+    protected override async Task OnInitializedAsync()
+    {
+        GetPDFFileData = await context.UploadedFileNames.AsNoTracking().Where(x => x.IsPdf && x.IsVolley).ToListAsync();
+        VideoFiles = await context.UploadedFileNames.Where(_ => _.IsPdf == false && _.IsVolley).ToListAsync();
+    }
+}
+

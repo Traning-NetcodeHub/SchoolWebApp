@@ -10,22 +10,31 @@
 <div class="container-fluid">
     <div class="row mt-3">
         <div class="col-lg-12 col-md-12 col-sm-12 ">
-            <div class="card">
-                <div class="card-header d-flex justify-content-evenly">
-                    <NetcodeHubFileUpload Multiple="true" RequiredExtensions="Extension" ShowDisplay="true" CssClass="form-control form-select d-flex" Notify="RetrieveVideoFile" />
-                    @if (SelectedVideoFile.Count != 0)
-                    {
-                        <button class="btn btn-primary btn-lg btn-block d-flex" @onclick="UploadVideoFile">Upload Video</button>
-                    }
+            <EditForm Model="uploadFileName" OnValidSubmit="SaveFile">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-evenly">
+                        <NetcodeHubFileUpload Multiple="true" RequiredExtensions="Extension" ShowDisplay="true" CssClass="form-control form-select d-flex" Notify="RetrieveVideoFile" />
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <select class="form-control" @onchange="OnSelectionChanged">
+                                <option value="">-- Select an option --</option>
+                                <option value="volley">Volley</option>
+                                <option value="tennis">Tennis</option>
+
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-primary btn-lg" type="submit">Upload</button>
+                    </div>
                 </div>
-            </div>
-
-
+            </EditForm>
         </div>
         <div class="col-lg-12 col-md-12 mt-3">
             <div class="card">
                 <div class="card-header">
-                    Available Files
+                    Available Files | Volley && Tennis
                 </div>
                 <div class="container-fluid">
                     <div class="row">
@@ -34,7 +43,8 @@
                             @foreach (var file in GetVideoFileData)
                             {
                                 <div class="card col-lg-4 col-md-4 col-sm-12">
-                                    <div class="card-header"> @file.OriginalName
+                                    <div class="card-header">
+                                        @file.OriginalName
                                         <a class="btn btn-link text-danger float-end" @onclick="(async ()=>await Delete(file))">X</a>
                                     </div>
                                     <video width="400" controls>
@@ -62,13 +72,27 @@
                  Duration=4000 />
 
 @code {
+
     NetcodeHubToast? Toast;
     List<string> Extension = [".mp4"];
     HashSet<IBrowserFile> SelectedVideoFile = [];
     List<UploadFileName> GetVideoFileData = [];
+    UploadFileName uploadFileName = new();
     protected override async Task OnInitializedAsync()
     {
         await GetVideoFiles();
+    }
+
+    private void OnSelectionChanged(ChangeEventArgs e)
+    {
+        string selected = e.Value!.ToString()!;
+        if (!string.IsNullOrWhiteSpace(selected))
+        {
+            if (selected.ToLower().Equals("volley"))
+                uploadFileName.IsVolley = true;
+            else
+                uploadFileName.IsTennis = true;
+        }
     }
 
     private async Task RetrieveVideoFile(NetcodeHubUploadModel model)
@@ -81,9 +105,20 @@
         SelectedVideoFile = model.FileModel!.IBrowserFiles!.ToHashSet();
     }
 
-    async Task UploadVideoFile()
+    async Task SaveFile()
     {
-        if (!SelectedVideoFile.Any()) return;
+        if (uploadFileName.IsTennis == false && uploadFileName.IsVolley == false)
+        {
+            await Toast!.ShowErrorToast("Alert", "Kindly select file type");
+            return;
+        }
+
+
+        if (!SelectedVideoFile.Any())
+        {
+            await Toast!.ShowErrorToast("Alert", "Kindly select file");
+            return;
+        }
 
         List<UploadFileName> VideoFileNames = [];
         foreach (var file in SelectedVideoFile)
@@ -101,12 +136,10 @@
             {
                 await file.OpenReadStream(maxFileSize).CopyToAsync(stream);
                 // Generate the relative path to the video
-                VideoFileNames!.Add(new UploadFileName()
-                    {
-                        OriginalName = originalFileName,
-                        GeneratedName = GeneratedFileName,
-                        FileLink = $"/Videos/{GeneratedFileName}"
-                    });
+                uploadFileName.OriginalName = originalFileName;
+                uploadFileName.GeneratedName = GeneratedFileName;
+                uploadFileName.FileLink = $"/Videos/{GeneratedFileName}";
+                VideoFileNames!.Add(uploadFileName);
             }
         }
         await CommitToDatabase(VideoFileNames);
@@ -122,7 +155,7 @@
         await Toast!.ShowSuccessToast("Information", "Video file saved successfully");
     }
 
-    private async Task GetVideoFiles() => GetVideoFileData = await context.UploadedFileNames.AsNoTracking().Where(_=>_.IsPdf == false).ToListAsync();
+    private async Task GetVideoFiles() => GetVideoFileData = await context.UploadedFileNames.AsNoTracking().Where(_ => _.IsPdf == false).ToListAsync();
 
     async Task Delete(UploadFileName file)
     {

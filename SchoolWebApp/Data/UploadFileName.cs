@@ -7,5 +7,7 @@
         public string? GeneratedName { get; set; }
         public string? FileLink { get; set; }
         public bool IsPdf { get; set; } = false;
+        public bool IsVolley { get; set; } = false;
+        public bool IsTennis { get; set; } = false;
     }
 }

@@ -227,6 +227,12 @@ namespace SchoolWebApp.Migrations
                     b.Property<bool>("IsPdf")
                         .HasColumnType("INTEGER");
 
+                    b.Property<bool>("IsTennis")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsVolley")
+                        .HasColumnType("INTEGER");
+
                     b.Property<string>("OriginalName")
                         .HasColumnType("TEXT");
 

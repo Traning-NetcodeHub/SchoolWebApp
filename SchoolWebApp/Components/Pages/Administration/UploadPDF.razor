@@ -11,21 +11,31 @@
 <div class="container-fluid">
     <div class="row mt-3">
         <div class="col-lg-12 col-md-12 col-sm-12 ">
-            <div class="card">
+            <EditForm Model="uploadFileName" OnValidSubmit="SaveFile">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-evenly">
+                        <NetcodeHubFileUpload Multiple="true" RequiredExtensions="Extension" ShowDisplay="true" CssClass="form-control form-select d-flex" Notify="RetrievePDFFile" />
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <select class="form-control" @onchange="OnSelectionChanged">
+                                <option value="">-- Select an option --</option>
+                                <option value="volley">Volley</option>
+                                <option value="tennis">Tennis</option>
 
-                <div class="card-header d-flex justify-content-evenly">
-                    <NetcodeHubFileUpload Multiple="true" RequiredExtensions="Extension" ShowDisplay="true" CssClass="form-control form-select d-flex" Notify="RetrievePDFFile" />
-                    @if (SelectedPDFFiles.Count != 0)
-                    {
-                        <button class="btn btn-primary btn-lg btn-block d-flex" @onclick="UploadPDFFile">Upload PDF</button>
-                    }
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <button class="btn btn-primary btn-lg" type="submit">Upload</button>
+                    </div>
                 </div>
-            </div>
+            </EditForm>
         </div>
         <div class="col-lg-12 col-md-12 mt-3">
             <div class="card">
                 <div class="card-header">
-                    Available Files
+                    Available Files | Volley & Tennis
                 </div>
                 <div class="container-fluid">
                     <div class="row">
@@ -49,6 +59,7 @@
     </div>
 </div>
 
+
 <NetcodeHubToast @ref="Toast"
                  Position="@ToastPosition.Bottom()"
                  IconClass="bi bi-check"
@@ -56,15 +67,25 @@
                  Duration=4000 />
 
 @code {
+    UploadFileName uploadFileName = new();
     NetcodeHubToast? Toast;
     List<string> Extension = [".pdf"];
     HashSet<IBrowserFile> SelectedPDFFiles = [];
     List<UploadFileName> GetPDFFileData = [];
-    protected override async Task OnInitializedAsync()
-    {
-        await GetPDFFiles();
-    }
+    protected override async Task OnInitializedAsync() => await GetPDFFiles();
+    
 
+    private void OnSelectionChanged(ChangeEventArgs e)
+    {
+        string selected = e.Value!.ToString()!;
+        if (!string.IsNullOrWhiteSpace(selected))
+        {
+            if (selected.ToLower().Equals("volley"))
+                uploadFileName.IsVolley = true;
+            else
+                uploadFileName.IsTennis = true;
+        }
+    }
     private async Task RetrievePDFFile(NetcodeHubUploadModel model)
     {
         if (!string.IsNullOrEmpty(model.Message))
@@ -75,9 +96,20 @@
         SelectedPDFFiles = model.FileModel!.IBrowserFiles!.ToHashSet();
     }
 
-    async Task UploadPDFFile()
+    async Task SaveFile()
     {
-        if (!SelectedPDFFiles.Any()) return;
+        if (uploadFileName.IsTennis == false && uploadFileName.IsVolley == false)
+        {
+            await Toast!.ShowErrorToast("Alert", "Kindly select file type");
+            return;
+        }
+
+
+        if (!SelectedPDFFiles.Any())
+        {
+            await Toast!.ShowErrorToast("Alert", "Kindly select file");
+            return;
+        }
 
         List<UploadFileName> pdfFileNames = [];
         foreach (var file in SelectedPDFFiles)
@@ -95,13 +127,11 @@
             {
                 await file.OpenReadStream(maxFileSize).CopyToAsync(stream);
                 // Generate the relative path to the video
-                pdfFileNames!.Add(new UploadFileName()
-                    {
-                        OriginalName = originalFileName,
-                        GeneratedName = GeneratedFileName,
-                        FileLink = $"/PDFs/{GeneratedFileName}",
-                        IsPdf = true
-                    });
+                uploadFileName.OriginalName = originalFileName;
+                uploadFileName.GeneratedName = GeneratedFileName;
+                uploadFileName.FileLink = $"/PDFs/{GeneratedFileName}";
+                uploadFileName.IsPdf = true;
+                pdfFileNames!.Add(uploadFileName);
             }
         }
         await CommitToDatabase(pdfFileNames);

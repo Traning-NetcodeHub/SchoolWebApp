@@ -52,6 +52,24 @@ namespace SchoolWebApp.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UploadedFileNames",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    OriginalName = table.Column<string>(type: "TEXT", nullable: true),
+                    GeneratedName = table.Column<string>(type: "TEXT", nullable: true),
+                    FileLink = table.Column<string>(type: "TEXT", nullable: true),
+                    IsPdf = table.Column<bool>(type: "INTEGER", nullable: false),
+                    IsVolley = table.Column<bool>(type: "INTEGER", nullable: false),
+                    IsTennis = table.Column<bool>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UploadedFileNames", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -212,6 +230,9 @@ namespace SchoolWebApp.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "UploadedFileNames");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

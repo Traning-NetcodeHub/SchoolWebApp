@@ -1,4 +1,6 @@
-﻿<nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-primary p-2" style="font-family:Cambria"
+﻿@inject NavigationManager NavManager
+@rendermode InteractiveServer
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-primary p-2" style="font-family:Cambria"
     <a class="navbar-brand" href="#">EduSport</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -9,13 +11,10 @@
                 <a class="nav-link text-light fw-bold" href="#">Home <span class="sr-only"></span></a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light fw-bold" href="#">Tennis</a>
+                <a class="nav-link text-light fw-bold" style="cursor:pointer" @onclick="GotoTennis">Tennis</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link text-light fw-bold" href="#">Tennis Table</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link text-light fw-bold" href="#">Volleyball</a>
+                <a class="nav-link text-light fw-bold" style="cursor:pointer" @onclick="GotoVolley">Volley</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link text-light fw-bold" href="#">Basketball</a>
@@ -33,9 +32,14 @@
                     <li><a class="dropdown-item" href="#">More</a></li>
                 </ul>
             </li>
-            <li>
-
+            <AuthorizeView Roles="Admin">
+                <Authorized>
+            <li class="nav-item">
+                <a class="nav-link text-light fw-bold" href="admin">Dashboard</a>
             </li>
+                </Authorized>
+            </AuthorizeView>
+
         </ul>
         <AuthorizeView>
              <NotAuthorized>
@@ -48,3 +52,7 @@
 
 </nav>
 
+@code{
+    void GotoVolley() => NavManager.NavigateTo("/volley", true);
+    void GotoTennis() => NavManager.NavigateTo("/tennis", true);
+}
